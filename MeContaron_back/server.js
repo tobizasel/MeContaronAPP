@@ -7,7 +7,7 @@ app.get("/api", (req, res) => {
     const tweet = "La NASA anunció que un nuevo rover explorará Marte en 2025 para buscar signos de vida."
     //const tweet = getTweets()
     const keyWords = extractKeywords(tweet)
-    res.json(keyWords)
+    res.json(keyWords)  
 
 })
 
