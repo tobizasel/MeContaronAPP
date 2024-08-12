@@ -1,36 +1,49 @@
-import axios from "axios";
+function sacarTildes(texto) {
+  const mapaTildes = {
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+    'ü': 'u', 'Ü': 'U'
+  };
 
-// La función extractKeywords toma el texto como parámetro y devuelve lo que devuelve la API
-const extractKeywords = async (text) => {
-  const apiKey = "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";
+  return texto.replace(/[áéíóúÁÉÍÓÚüÜ]/g, letra => mapaTildes[letra] || letra);
+}
+
+const sacarComillas = (texto) => {
+  return texto
+    .replace(/"/g, '')  // Eliminar comillas
+    .replace(/,\s*/g, ' ')  // Reemplazar comas y espacios posteriores con un solo espacio
+    .trim();  // Eliminar espacios al principio y al final
+}
+
+export function extraerKeywords(texto) {
+  const palabrasVacias = [
+    "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o", "pero", 
+    "si", "no", "en", "de", "a", "para", "por", "con", "sin", "que", "se", 
+    "del", "al", "es", "son", "como", "más", "este", "esta", "estos", "estas",
+    "hacia", "anuncio", "sobre", "entre", "durante", "hasta", "aún", "mientras", 
+    "también", "así", "tan", "donde", "cual", "quien", "cuyo", "aunque", "siempre",
+    "ni", "tampoco", "porque", "además", "ya", "muy", "mío", "tuyo", "suyo",
+    "nuestro", "vuestro", "algo", "nada", "todo", "alguno", "ninguno", "cada", 
+    "tanto", "demasiado", "poco", "algunos", "cualquier", "cualquiera", "tal", 
+    "aquel", "aquella", "este", "esta", "ese", "esa"
+];
+
+
+  texto = sacarTildes(texto);
+  // Tokenizar y limpiar el texto
+  let palabras = texto.toLowerCase().match(/\b\w+\b/g) || [];
+
+  // Filtrar palabras
+  palabras = palabras.filter(palabra => 
+    !palabrasVacias.includes(palabra) && palabra.length > 3
+  );
+
+  // Unir palabras en una cadena
+  let textoFiltrado = palabras.join(' ');
+
+  // Aplicar transformaciones
   
-  try {
-    const response = await axios.post(
-      "https://api.anthropic.com/v1/completions",
-      {
-        model: "claude-3-sonnet-20240229",
-        prompt: `Por favor, analiza el siguiente texto y extrae las palabras clave más importantes:
-
-"${text}"
-
-Devuelve solo una lista de palabras clave, separadas por comas.`,
-        max_tokens_to_sample: 300,
-        temperature: 0.2,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": apiKey,
-        },
-      }
-    );
-
-    // Devuelve el resultado de la API directamente
-    return response.data.completion;
-  } catch (error) {
-    console.error("Error al extraer palabras clave:", error);
-    return "Error al procesar la solicitud.";
-  }
-};
-
-export default extractKeywords;
+  textoFiltrado = sacarComillas(textoFiltrado);
+  
+  return textoFiltrado;
+}
